@@ -13,6 +13,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -22,6 +23,7 @@ def index():
             # Remove old images
             for f in ["input.jpg", "output.jpg"]:
                 path = os.path.join(UPLOAD_FOLDER, f)
+
                 if os.path.exists(path):
                     os.remove(path)
 
@@ -32,10 +34,10 @@ def index():
 
             caption = generate_caption(input_path)
 
-            # Simple + clean explanation
+            # Simple explanation
             explanation = caption.capitalize()
 
-            # Prevent caching
+            # Prevent browser caching
             output_image = output_image + "?t=" + str(time.time())
 
             return render_template(
@@ -54,10 +56,15 @@ def webcam():
     import threading
     import webcam
 
-    # run webcam in a thread so Flask doesn't freeze
+    # NOTE:
+    # This route works locally only.
+    # Webcam/OpenCV window will NOT work on Azure Web App.
+
     threading.Thread(target=webcam.run, daemon=True).start()
 
     return "🎥 Webcam started! Check the OpenCV window. Press Q to exit."
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
